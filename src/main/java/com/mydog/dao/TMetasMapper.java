@@ -3,6 +3,9 @@ package com.mydog.dao;
 import com.mydog.entity.TMetas;
 import com.mydog.entity.TMetasExample;
 import java.util.List;
+import java.util.Map;
+
+import com.mydog.model.MetaDto;
 import org.apache.ibatis.annotations.Param;
 
 public interface TMetasMapper {
@@ -27,4 +30,10 @@ public interface TMetasMapper {
     int updateByPrimaryKeySelective(TMetas record);
 
     int updateByPrimaryKey(TMetas record);
+
+    List<MetaDto> selectFromSql(Map<String,Object> paraMap);
+
+    MetaDto selectDtoByNameAndType(@Param("name") String name,@Param("type") String type);
+
+    Integer countWithSql(Integer mid);
 }

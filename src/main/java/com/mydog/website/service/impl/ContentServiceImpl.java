@@ -2,19 +2,19 @@ package com.mydog.website.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.my.blog.website.constant.WebConst;
-import com.my.blog.website.dao.ContentVoMapper;
-import com.my.blog.website.dao.MetaVoMapper;
-import com.my.blog.website.dto.Types;
-import com.my.blog.website.exception.TipException;
-import com.my.blog.website.modal.Vo.ContentVo;
-import com.my.blog.website.modal.Vo.ContentVoExample;
-import com.my.blog.website.service.IContentService;
-import com.my.blog.website.service.IMetaService;
-import com.my.blog.website.service.IRelationshipService;
-import com.my.blog.website.utils.DateKit;
-import com.my.blog.website.utils.TaleUtils;
-import com.my.blog.website.utils.Tools;
+import com.mydog.dao.TContentsMapper;
+import com.mydog.dao.TMetasMapper;
+import com.mydog.entity.TContents;
+import com.mydog.entity.TContentsExample;
+import com.mydog.website.TipException;
+import com.mydog.website.constant.WebConst;
+import com.mydog.website.dto.Types;
+import com.mydog.website.service.IContentService;
+import com.mydog.website.service.IMetaService;
+import com.mydog.website.service.IRelationshipService;
+import com.mydog.website.utils.DateKit;
+import com.mydog.website.utils.TableUtils;
+import com.mydog.website.utils.Tools;
 import com.vdurmont.emoji.EmojiParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,10 +32,10 @@ public class ContentServiceImpl implements IContentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContentServiceImpl.class);
 
     @Resource
-    private ContentVoMapper contentDao;
+    private TContentsMapper contentDao;
 
     @Resource
-    private MetaVoMapper metaDao;
+    private TMetasMapper metaDao;
 
     @Resource
     private IRelationshipService relationshipService;
@@ -44,7 +44,7 @@ public class ContentServiceImpl implements IContentService {
     private IMetaService metasService;
 
     @Override
-    public void publish(ContentVo contents) {
+    public void publish(TContents contents) {
         if (null == contents) {
             throw new TipException("文章对象为空");
         }
@@ -69,8 +69,8 @@ public class ContentServiceImpl implements IContentService {
             if (contents.getSlug().length() < 5) {
                 throw new TipException("路径太短了");
             }
-            if (!TaleUtils.isPath(contents.getSlug())) throw new TipException("您输入的路径不合法");
-            ContentVoExample contentVoExample = new ContentVoExample();
+            if (!TableUtils.isPath(contents.getSlug())) throw new TipException("您输入的路径不合法");
+            TContentsExample contentVoExample = new TContentsExample();
             contentVoExample.createCriteria().andTypeEqualTo(contents.getType()).andStatusEqualTo(contents.getSlug());
             long count = contentDao.countByExample(contentVoExample);
             if (count > 0) throw new TipException("该路径已经存在，请重新输入");
@@ -96,32 +96,32 @@ public class ContentServiceImpl implements IContentService {
     }
 
     @Override
-    public PageInfo<ContentVo> getContents(Integer p, Integer limit) {
+    public PageInfo<TContents> getContents(Integer p, Integer limit) {
         LOGGER.debug("Enter getContents method");
-        ContentVoExample example = new ContentVoExample();
+        TContentsExample example = new TContentsExample();
         example.setOrderByClause("created desc");
         example.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andStatusEqualTo(Types.PUBLISH.getType());
         PageHelper.startPage(p, limit);
-        List<ContentVo> data = contentDao.selectByExampleWithBLOBs(example);
-        PageInfo<ContentVo> pageInfo = new PageInfo<>(data);
+        List<TContents> data = contentDao.selectByExampleWithBLOBs(example);
+        PageInfo<TContents> pageInfo = new PageInfo<>(data);
         LOGGER.debug("Exit getContents method");
         return pageInfo;
     }
 
     @Override
-    public ContentVo getContents(String id) {
+    public TContents getContents(String id) {
         if (StringUtils.isNotBlank(id)) {
             if (Tools.isNumber(id)) {
-                ContentVo contentVo = contentDao.selectByPrimaryKey(Integer.valueOf(id));
+                TContents contentVo = contentDao.selectByPrimaryKey(Integer.valueOf(id));
                 if (contentVo != null) {
                     contentVo.setHits(contentVo.getHits() + 1);
                     contentDao.updateByPrimaryKey(contentVo);
                 }
                 return contentVo;
             } else {
-                ContentVoExample contentVoExample = new ContentVoExample();
+                TContentsExample contentVoExample = new TContentsExample();
                 contentVoExample.createCriteria().andSlugEqualTo(id);
-                List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
+                List<TContents> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
                 if (contentVos.size() != 1) {
                     throw new TipException("query content by id and return is not one");
                 }
@@ -132,45 +132,45 @@ public class ContentServiceImpl implements IContentService {
     }
 
     @Override
-    public void updateContentByCid(ContentVo contentVo) {
+    public void updateContentByCid(TContents contentVo) {
         if (null != contentVo && null != contentVo.getCid()) {
             contentDao.updateByPrimaryKeySelective(contentVo);
         }
     }
 
     @Override
-    public PageInfo<ContentVo> getArticles(Integer mid, int page, int limit) {
+    public PageInfo<TContents> getArticles(Integer mid, int page, int limit) {
         int total = metaDao.countWithSql(mid);
         PageHelper.startPage(page, limit);
-        List<ContentVo> list = contentDao.findByCatalog(mid);
-        PageInfo<ContentVo> paginator = new PageInfo<>(list);
+        List<TContents> list = contentDao.findByCatalog(mid);
+        PageInfo<TContents> paginator = new PageInfo<>(list);
         paginator.setTotal(total);
         return paginator;
     }
 
     @Override
-    public PageInfo<ContentVo> getArticles(String keyword, Integer page, Integer limit) {
+    public PageInfo<TContents> getArticles(String keyword, Integer page, Integer limit) {
         PageHelper.startPage(page, limit);
-        ContentVoExample contentVoExample = new ContentVoExample();
-        ContentVoExample.Criteria criteria = contentVoExample.createCriteria();
+        TContentsExample contentVoExample = new TContentsExample();
+        TContentsExample.Criteria criteria = contentVoExample.createCriteria();
         criteria.andTypeEqualTo(Types.ARTICLE.getType());
         criteria.andStatusEqualTo(Types.PUBLISH.getType());
         criteria.andTitleLike("%" + keyword + "%");
         contentVoExample.setOrderByClause("created desc");
-        List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
+        List<TContents> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
         return new PageInfo<>(contentVos);
     }
 
     @Override
-    public PageInfo<ContentVo> getArticlesWithpage(ContentVoExample commentVoExample, Integer page, Integer limit) {
+    public PageInfo<TContents> getArticlesWithPage(TContentsExample commentVoExample, Integer page, Integer limit) {
         PageHelper.startPage(page, limit);
-        List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(commentVoExample);
+        List<TContents> contentVos = contentDao.selectByExampleWithBLOBs(commentVoExample);
         return new PageInfo<>(contentVos);
     }
 
     @Override
     public void deleteByCid(Integer cid) {
-        ContentVo contents = this.getContents(cid + "");
+        TContents contents = this.getContents(cid + "");
         if (null != contents) {
             contentDao.deleteByPrimaryKey(cid);
             relationshipService.deleteById(cid, null);
@@ -179,15 +179,15 @@ public class ContentServiceImpl implements IContentService {
 
     @Override
     public void updateCategory(String ordinal, String newCatefory) {
-        ContentVo contentVo = new ContentVo();
+        TContents contentVo = new TContents();
         contentVo.setCategories(newCatefory);
-        ContentVoExample example = new ContentVoExample();
+        TContentsExample example = new TContentsExample();
         example.createCriteria().andCategoriesEqualTo(ordinal);
         contentDao.updateByExampleSelective(contentVo, example);
     }
 
     @Override
-    public void updateArticle(ContentVo contents) {
+    public void updateArticle(TContents contents) {
         if (null == contents || null == contents.getCid()) {
             throw new TipException("文章对象不能为空");
         }

@@ -3,6 +3,8 @@ package com.mydog.dao;
 import com.mydog.entity.TContents;
 import com.mydog.entity.TContentsExample;
 import java.util.List;
+
+import com.mydog.model.ArchiveBo;
 import org.apache.ibatis.annotations.Param;
 
 public interface TContentsMapper {
@@ -33,4 +35,8 @@ public interface TContentsMapper {
     int updateByPrimaryKeyWithBLOBs(TContents record);
 
     int updateByPrimaryKey(TContents record);
+
+    List<ArchiveBo> findReturnArchiveBo();
+
+    List<TContents> findByCatalog(Integer mid);
 }

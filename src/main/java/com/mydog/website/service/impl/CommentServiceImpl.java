@@ -2,16 +2,16 @@ package com.mydog.website.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.my.blog.website.dao.CommentVoMapper;
-import com.my.blog.website.exception.TipException;
-import com.my.blog.website.modal.Bo.CommentBo;
-import com.my.blog.website.modal.Vo.CommentVo;
-import com.my.blog.website.modal.Vo.CommentVoExample;
-import com.my.blog.website.modal.Vo.ContentVo;
-import com.my.blog.website.service.ICommentService;
-import com.my.blog.website.service.IContentService;
-import com.my.blog.website.utils.DateKit;
-import com.my.blog.website.utils.TaleUtils;
+import com.mydog.dao.TCommentsMapper;
+import com.mydog.entity.TComments;
+import com.mydog.entity.TCommentsExample;
+import com.mydog.entity.TContents;
+import com.mydog.model.CommentBo;
+import com.mydog.website.TipException;
+import com.mydog.website.service.ICommentService;
+import com.mydog.website.service.IContentService;
+import com.mydog.website.utils.DateKit;
+import com.mydog.website.utils.TableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,20 +29,20 @@ public class CommentServiceImpl implements ICommentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommentServiceImpl.class);
 
     @Resource
-    private CommentVoMapper commentDao;
+    private TCommentsMapper commentDao;
 
     @Resource
     private IContentService contentService;
 
     @Override
-    public void insertComment(CommentVo comments) {
+    public void insertComment(TComments comments) {
         if (null == comments) {
             throw new TipException("评论对象为空");
         }
         if (StringUtils.isBlank(comments.getAuthor())) {
             comments.setAuthor("热心网友");
         }
-        if (StringUtils.isNotBlank(comments.getMail()) && !TaleUtils.isEmail(comments.getMail())) {
+        if (StringUtils.isNotBlank(comments.getMail()) && !TableUtils.isEmail(comments.getMail())) {
             throw new TipException("请输入正确的邮箱格式");
         }
         if (StringUtils.isBlank(comments.getContent())) {
@@ -54,7 +54,7 @@ public class CommentServiceImpl implements ICommentService {
         if (null == comments.getCid()) {
             throw new TipException("评论文章不能为空");
         }
-        ContentVo contents = contentService.getContents(String.valueOf(comments.getCid()));
+        TContents contents = contentService.getContents(String.valueOf(comments.getCid()));
         if (null == contents) {
             throw new TipException("不存在的文章");
         }
@@ -62,7 +62,7 @@ public class CommentServiceImpl implements ICommentService {
         comments.setCreated(DateKit.getCurrentUnixTime());
         commentDao.insertSelective(comments);
 
-        ContentVo temp = new ContentVo();
+        TContents temp = new TContents();
         temp.setCid(contents.getCid());
         temp.setCommentsNum(contents.getCommentsNum() + 1);
         contentService.updateContentByCid(temp);
@@ -73,11 +73,11 @@ public class CommentServiceImpl implements ICommentService {
 
         if (null != cid) {
             PageHelper.startPage(page, limit);
-            CommentVoExample commentVoExample = new CommentVoExample();
+            TCommentsExample commentVoExample = new TCommentsExample();
             commentVoExample.createCriteria().andCidEqualTo(cid).andParentEqualTo(0);
             commentVoExample.setOrderByClause("coid desc");
-            List<CommentVo> parents = commentDao.selectByExampleWithBLOBs(commentVoExample);
-            PageInfo<CommentVo> commentPaginator = new PageInfo<>(parents);
+            List<TComments> parents = commentDao.selectByExampleWithBLOBs(commentVoExample);
+            PageInfo<TComments> commentPaginator = new PageInfo<>(parents);
             PageInfo<CommentBo> returnBo = copyPageInfo(commentPaginator);
             if (parents.size() != 0) {
                 List<CommentBo> comments = new ArrayList<>(parents.size());
@@ -93,15 +93,15 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public PageInfo<CommentVo> getCommentsWithPage(CommentVoExample commentVoExample, int page, int limit) {
+    public PageInfo<TComments> getCommentsWithPage(TCommentsExample commentVoExample, int page, int limit) {
         PageHelper.startPage(page, limit);
-        List<CommentVo> commentVos = commentDao.selectByExampleWithBLOBs(commentVoExample);
-        PageInfo<CommentVo> pageInfo = new PageInfo<>(commentVos);
+        List<TComments> commentVos = commentDao.selectByExampleWithBLOBs(commentVoExample);
+        PageInfo<TComments> pageInfo = new PageInfo<>(commentVos);
         return pageInfo;
     }
 
     @Override
-    public void update(CommentVo comments) {
+    public void update(TComments comments) {
         if (null != comments && null != comments.getCoid()) {
             commentDao.updateByPrimaryKeyWithBLOBs(comments);
         }
@@ -113,9 +113,9 @@ public class CommentServiceImpl implements ICommentService {
             throw new TipException("主键为空");
         }
         commentDao.deleteByPrimaryKey(coid);
-        ContentVo contents = contentService.getContents(cid + "");
+        TContents contents = contentService.getContents(cid + "");
         if (null != contents && contents.getCommentsNum() > 0) {
-            ContentVo temp = new ContentVo();
+            TContents temp = new TContents();
             temp.setCid(cid);
             temp.setCommentsNum(contents.getCommentsNum() - 1);
             contentService.updateContentByCid(temp);
@@ -123,7 +123,7 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public CommentVo getCommentById(Integer coid) {
+    public TComments getCommentById(Integer coid) {
         if (null != coid) {
             return commentDao.selectByPrimaryKey(coid);
         }

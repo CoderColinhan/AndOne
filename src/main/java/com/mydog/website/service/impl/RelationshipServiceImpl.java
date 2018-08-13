@@ -1,9 +1,9 @@
 package com.mydog.website.service.impl;
 
-import com.my.blog.website.dao.RelationshipVoMapper;
-import com.my.blog.website.modal.Vo.RelationshipVoExample;
-import com.my.blog.website.modal.Vo.RelationshipVoKey;
-import com.my.blog.website.service.IRelationshipService;
+import com.mydog.dao.TRelationshipsMapper;
+import com.mydog.entity.TRelationshipsExample;
+import com.mydog.entity.TRelationshipsKey;
+import com.mydog.website.service.IRelationshipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,12 +19,12 @@ public class RelationshipServiceImpl implements IRelationshipService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationshipServiceImpl.class);
 
     @Resource
-    private RelationshipVoMapper relationshipVoMapper;
+    private TRelationshipsMapper relationshipVoMapper;
 
     @Override
     public void deleteById(Integer cid, Integer mid) {
-        RelationshipVoExample relationshipVoExample = new RelationshipVoExample();
-        RelationshipVoExample.Criteria criteria = relationshipVoExample.createCriteria();
+        TRelationshipsExample relationshipVoExample = new TRelationshipsExample();
+        TRelationshipsExample.Criteria criteria = relationshipVoExample.createCriteria();
         if (cid != null) {
             criteria.andCidEqualTo(cid);
         }
@@ -35,9 +35,9 @@ public class RelationshipServiceImpl implements IRelationshipService {
     }
 
     @Override
-    public List<RelationshipVoKey> getRelationshipById(Integer cid, Integer mid) {
-        RelationshipVoExample relationshipVoExample = new RelationshipVoExample();
-        RelationshipVoExample.Criteria criteria = relationshipVoExample.createCriteria();
+    public List<TRelationshipsKey> getRelationshipById(Integer cid, Integer mid) {
+        TRelationshipsExample relationshipVoExample = new TRelationshipsExample();
+        TRelationshipsExample.Criteria criteria = relationshipVoExample.createCriteria();
         if (cid != null) {
             criteria.andCidEqualTo(cid);
         }
@@ -48,15 +48,15 @@ public class RelationshipServiceImpl implements IRelationshipService {
     }
 
     @Override
-    public void insertVo(RelationshipVoKey relationshipVoKey) {
+    public void insertVo(TRelationshipsKey relationshipVoKey) {
         relationshipVoMapper.insert(relationshipVoKey);
     }
 
     @Override
     public Long countById(Integer cid, Integer mid) {
         LOGGER.debug("Enter countById method:cid={},mid={}",cid,mid);
-        RelationshipVoExample relationshipVoExample = new RelationshipVoExample();
-        RelationshipVoExample.Criteria criteria = relationshipVoExample.createCriteria();
+        TRelationshipsExample relationshipVoExample = new TRelationshipsExample();
+        TRelationshipsExample.Criteria criteria = relationshipVoExample.createCriteria();
         if (cid != null) {
             criteria.andCidEqualTo(cid);
         }

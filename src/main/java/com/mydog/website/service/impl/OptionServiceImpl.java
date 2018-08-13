@@ -1,9 +1,9 @@
 package com.mydog.website.service.impl;
 
-import com.my.blog.website.dao.OptionVoMapper;
-import com.my.blog.website.modal.Vo.OptionVo;
-import com.my.blog.website.modal.Vo.OptionVoExample;
-import com.my.blog.website.service.IOptionService;
+import com.mydog.dao.TOptionsMapper;
+import com.mydog.entity.TOptions;
+import com.mydog.entity.TOptionsExample;
+import com.mydog.website.service.IOptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,10 +22,10 @@ public class OptionServiceImpl implements IOptionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OptionServiceImpl.class);
 
     @Resource
-    private OptionVoMapper optionDao;
+    private TOptionsMapper optionDao;
 
     @Override
-    public void insertOption(OptionVo optionVo) {
+    public void insertOption(TOptions optionVo) {
         LOGGER.debug("Enter insertOption method:optionVo={}" ,optionVo);
         optionDao.insertSelective(optionVo);
         LOGGER.debug("Exit insertOption method.");
@@ -34,10 +34,10 @@ public class OptionServiceImpl implements IOptionService {
     @Override
     public void insertOption(String name, String value) {
         LOGGER.debug("Enter insertOption method:name={},value={}",name,value );
-        OptionVo optionVo = new OptionVo();
+        TOptions optionVo = new TOptions();
         optionVo.setName(name);
         optionVo.setValue(value);
-        if(optionDao.selectByExample(new OptionVoExample()).size()==0){
+        if(optionDao.selectByExample(new TOptionsExample()).size()==0){
             optionDao.insertSelective(optionVo);
         }else{
             optionDao.updateByPrimaryKeySelective(optionVo);
@@ -53,7 +53,7 @@ public class OptionServiceImpl implements IOptionService {
     }
 
     @Override
-    public List<OptionVo> getOptions(){
-        return optionDao.selectByExample(new OptionVoExample());
+    public List<TOptions> getOptions(){
+        return optionDao.selectByExample(new TOptionsExample());
     }
 }

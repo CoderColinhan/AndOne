@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 页面的评论，包含父子评论内容
  */
-public class TCommentBo extends TComments {
+public class CommentBo extends TComments {
 
     public int getLevels() {
         return levels;
@@ -28,7 +28,7 @@ public class TCommentBo extends TComments {
     private int levels;
     private List<TComments> children;
 
-    public  TCommentBo(TComments comments){
+    public  CommentBo(TComments comments){
         setAuthor(comments.getAuthor());
         setMail(comments.getMail());
         setCoid(comments.getCoid());
